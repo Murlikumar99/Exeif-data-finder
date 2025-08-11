@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaSnap - Extract Image Metadata</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-dark: #3a0ca3;
+            --primary-light: #e0f7ef;
+            --secondary-color: #4cc9f0;
+            --accent-color: #f72585;
+            --text-dark: #2b2d42;
+            --text-light: #8d99ae;
+            --white: #fff;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --success-color: #4caf50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            background-color: var(--light-bg);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .logo img {
+            height: 36px;
+            width: 36px;
+            object-fit: contain;
+        }
+        
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .logo h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .logo p {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+        
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        nav ul li a:hover {
+            color: var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+        
+        /* Main Content */
+        main {
+            flex: 1;
+            padding-top: 80px; /* Space for fixed header */
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 5rem 5% 3rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(76, 201, 240, 0.1) 0%, rgba(76, 201, 240, 0) 70%);
+            z-index: 0;
+        }
+        
+        .hero::after {
+            content: "";
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(247, 37, 133, 0.05) 0%, rgba(247, 37, 133, 0) 70%);
+            z-index: 0;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h2 {
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-dark);
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.2;
+        }
+        
+        .hero h2 span {
+            color: var(--accent-color);
+        }
+        
+        .hero p {
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            color: var(--text-light);
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 4rem 5%;
+            background-color: var(--white);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title h3 {
+            font-size: 2rem;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .section-title p {
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(76, 201, 240, 0.1) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+        
+        .feature-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        .feature-card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        /* Upload Section */
+        .upload-section {
+            padding: 4rem 5%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .upload-card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+        }
+        
+        .upload-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.2);
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--primary-color);
+            border-radius: 10px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            background-color: rgba(67, 97, 238, 0.03);
+            position: relative;
+        }
+        
+        .upload-area:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: var(--secondary-color);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+        }
+        
+        .upload-text p {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            border: none;
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        /* Thumbnail Preview */
+        .thumbnail-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            justify-content: center;
+        }
+        
+        .thumbnail-item {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .thumbnail-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .thumbnail-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: var(--error-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .thumbnail-item:hover .thumbnail-remove {
+            opacity: 1;
+        }
+        
+        /* EXIF Data Display */
+        .exif-data {
+            margin-top: 3rem;
+            display: none;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .exif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .exif-data h3 {
+            font-size: 1.8rem;
+            color: var(--primary-dark);
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .exif-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        
+        .exif-table th, .exif-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .exif-table th {
+            background-color: rgba(67, 97, 238, 0.05);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        .exif-table tr:hover {
+            background-color: rgba(67, 97, 238, 0.03);
+        }
+        
+        .map-container {
+            height: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 2rem;
+            border: 1px solid #ddd;
+            display: none;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-clear {
+            background-color: #f1f1f1;
+            color: var(--text-dark);
+        }
+        
+        .btn-clear:hover {
+            background-color: #e1e1e1;
+        }
+        
+        .btn-download {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .btn-download:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        /* Warning Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            padding: 2.5rem;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-50px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            color: var(--text-dark);
+        }
+        
+        .modal-icon {
+            font-size: 3rem;
+            color: var(--warning-color);
+            margin-bottom: 1rem;
+        }
+        
+        .modal h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .modal p {
+            margin-bottom: 2rem;
+            color: var(--text-light);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .btn-cancel {
+            background-color: #f1f1f1;
+            color: var(--text-dark);
+        }
+        
+        .btn-proceed {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .btn-proceed:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        /* Help Button */
+        .help-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: var(--transition);
+        }
+        
+        .help-btn:hover {
+            transform: scale(1.1);
+            background-color: var(--primary-dark);
+        }
+        
+        /* Feedback Modal */
+        .feedback-modal {
+            max-width: 500px;
+        }
+        
+        .feedback-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            transition: var(--transition);
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .rating-stars {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .star {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .star.active {
+            color: var(--warning-color);
+        }
+        
+        /* Success Message */
+        .success-message {
+            display: none;
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid var(--success-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .success-message i {
+            color: var(--success-color);
+            font-size: 1.5rem;
+        }
+        
+        /* Warning Message */
+        .warning-message {
+            background-color: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .warning-message i {
+            color: var(--warning-color);
+            font-size: 1.5rem;
+        }
+        
+        /* Error Message */
+        .error-message {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid var(--error-color);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .error-message i {
+            color: var(--error-color);
+            font-size: 1.5rem;
+        }
+        
+        /* Preview Image */
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eee;
+        }
+        
+        /* Device Preview */
+        .device-preview {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background-color: rgba(67, 97, 238, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .device-image {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 8px;
+            background-color: var(--white);
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .device-info {
+            flex: 1;
+        }
+        
+        .device-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-dark);
+        }
+        
+        .device-model {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--primary-dark);
+            color: var(--white);
+            padding: 3rem 5% 2rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-column h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Montserrat', sans-serif;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-column h4::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--secondary-color);
+        }
+        
+        .footer-column p {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+            color: var(--secondary-color);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: var(--white);
+            transition: var(--transition);
+        }
+        
+        .social-links a:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .hero h2 {
+                font-size: 2.4rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            .logo {
+                margin-bottom: 1rem;
+            }
+            
+            nav ul {
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero {
+                padding: 4rem 5% 2rem;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+            
+            .upload-card {
+                padding: 1.5rem;
+            }
+            
+            .exif-table th, .exif-table td {
+                padding: 0.7rem;
+                font-size: 0.9rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .device-preview {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .device-image {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .hero h2 {
+                font-size: 1.8rem;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .exif-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="#" class="logo" data-aos="fade-right">
+            <img src="https://cdn-icons-png.flaticon.com/512/2284/2284886.png" alt="MetaSnap Logo">
+            <div class="logo-text">
+                <h1>MetaSnap</h1>
+                <p>EXIF DATA EXTRACTOR</p>
+            </div>
+        </a>
+        <nav>
+            <ul>
+                <li data-aos="fade-down" data-aos-delay="100"><a href="#features"><i class="fas fa-star"></i> Features</a></li>
+                <li data-aos="fade-down" data-aos-delay="200"><a href="#upload"><i class="fas fa-upload"></i> Upload</a></li>
+                <li data-aos="fade-down" data-aos-delay="300"><a href="#"><i class="fas fa-info-circle"></i> About</a></li>
+                <li data-aos="fade-down" data-aos-delay="400"><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" data-aos="fade-up">
+            <div class="hero-content">
+                <h2 data-aos="fade-up" data-aos-delay="100">Uncover Hidden <span>Image Data</span></h2>
+                <p data-aos="fade-up" data-aos-delay="200">Extract EXIF metadata from your photos to reveal camera details, location information, and more with our powerful online tool.</p>
+                <div class="hero-buttons" data-aos="fade-up" data-aos-delay="300">
+                    <a href="#upload" class="btn btn-primary"><i class="fas fa-cloud-upload-alt"></i> Upload Image</a>
+                    <button class="btn btn-outline" id="learnMoreBtn"><i class="fas fa-play-circle"></i> How It Works</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features" id="features" data-aos="fade-up">
+            <div class="section-title">
+                <h3>Powerful Features</h3>
+                <p>Discover all the metadata hidden in your images with our comprehensive tool</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon">
+                        <i class="fas fa-camera-retro"></i>
+                    </div>
+                    <h4>Camera Details</h4>
+                    <p>Extract make, model, and technical settings like aperture, ISO, and focal length from your photos.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h4>Location Data</h4>
+                    <p>View GPS coordinates and see the location on an interactive map if available in the image metadata.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h4>Date & Time</h4>
+                    <p>Discover when the photo was taken with precise timestamp information from the EXIF data.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <h4>Export Data</h4>
+                    <p>Download all extracted metadata in CSV format for further analysis or record keeping.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upload Section -->
+        <section class="upload-section" id="upload">
+            <div class="upload-card" data-aos="zoom-in">
+                <div class="upload-area" id="dropArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Upload Your Image</h3>
+                        <p>Drag & drop or click to browse your files (JPEG, PNG, HEIC supported)</p>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;" multiple>
+                    <button class="upload-btn" id="uploadBtn"><i class="fas fa-cloud-upload-alt"></i> Choose Image</button>
+                </div>
+                
+                <!-- Thumbnail Preview -->
+                <div class="thumbnail-container" id="thumbnailContainer"></div>
+            </div>
+
+            <!-- EXIF Data Display -->
+            <div class="exif-data" id="exifData">
+                <div class="exif-header">
+                    <h3>Image Metadata</h3>
+                    <div class="action-buttons">
+                        <button class="btn btn-clear" id="clearBtn"><i class="fas fa-trash"></i> Clear Data</button>
+                        <button class="btn btn-download" id="downloadBtn"><i class="fas fa-download"></i> Download Data</button>
+                    </div>
+                </div>
+                
+                <!-- Image Preview -->
+                <img id="imagePreview" class="image-preview" style="display: none;">
+                
+                <!-- Device Preview -->
+                <div class="device-preview" id="devicePreview" style="display: none;">
+                    <img id="deviceImage" class="device-image" src="" alt="Device Image">
+                    <div class="device-info">
+                        <div class="device-name" id="deviceName"></div>
+                        <div class="device-model" id="deviceModel"></div>
+                    </div>
+                </div>
+                
+                <!-- Warning for stripped metadata -->
+                <div class="warning-message" id="strippedWarning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Warning:</strong> This image may have been processed by social media (WhatsApp, Telegram, etc.) 
+                        and some metadata might have been stripped. The information shown might not be complete.
+                    </div>
+                </div>
+                
+                <table class="exif-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exifTableBody">
+                        <!-- EXIF data will be inserted here -->
+                    </tbody>
+                </table>
+                
+                <!-- Map Container -->
+                <div class="map-container" id="mapContainer" data-aos="fade-up">
+                    <!-- Google Map will be inserted here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Warning Modal -->
+    <div class="modal" id="warningModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Privacy Notice</h3>
+            <p>This tool will read the EXIF metadata of your image, which may include location data, camera details, and other potentially sensitive information. Your images are processed locally in your browser and are not uploaded to any server.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" id="cancelBtn">Cancel</button>
+                <button class="btn btn-proceed" id="proceedBtn">I Understand, Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Modal -->
+    <div class="modal" id="howItWorksModal">
+        <div class="modal-content">
+            <button class="modal-close" id="howItWorksClose">&times;</button>
+            <div class="modal-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <h3>How MetaSnap Works</h3>
+            <p>MetaSnap extracts EXIF (Exchangeable Image File Format) data from your images. Here's what you need to know:</p>
+            
+            <div style="text-align: left; margin-top: 1.5rem;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--primary-dark);">What is EXIF Data?</h4>
+                <p style="margin-bottom: 1.5rem;">EXIF is metadata stored in image files that can include information like:</p>
+                <ul style="margin-bottom: 1.5rem; padding-left: 1.5rem;">
+                    <li>Camera make and model</li>
+                    <li>Date and time the photo was taken</li>
+                    <li>Camera settings (aperture, shutter speed, ISO)</li>
+                    <li>GPS coordinates (if location services were enabled)</li>
+                    <li>Software used to edit the image</li>
+                </ul>
+                
+                <h4 style="margin-bottom: 0.5rem; color: var(--primary-dark);">Privacy Information</h4>
+                <p style="margin-bottom: 1.5rem;">All processing happens locally in your browser. Your images are never uploaded to any server, ensuring complete privacy.</p>
+                
+                <h4 style="margin-bottom: 0.5rem; color: var(--primary-dark);">Limitations</h4>
+                <p>Note that social media platforms like WhatsApp, Telegram, Facebook, etc. often strip this metadata when images are shared. For best results, use original images directly from your camera.</p>
+            </div>
+            
+            <div class="modal-buttons" style="margin-top: 2rem;">
+                <button class="btn btn-proceed" id="gotItBtn">Got It!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div class="modal" id="feedbackModal">
+        <div class="modal-content feedback-modal">
+            <button class="modal-close" id="feedbackClose">&times;</button>
+            <div class="modal-icon">
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <h3>Share Your Feedback</h3>
+            <p>We'd love to hear your thoughts about MetaSnap to help us improve!</p>
+            
+            <form class="feedback-form" id="feedbackForm">
+                <div class="form-group">
+                    <label for="feedbackName">Your Name (Optional)</label>
+                    <input type="text" id="feedbackName" placeholder="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedbackEmail">Email (Optional)</label>
+                    <input type="email" id="feedbackEmail" placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Your Rating</label>
+                    <div class="rating-stars" id="ratingStars">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="feedbackRating" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedbackMessage">Your Feedback</label>
+                    <textarea id="feedbackMessage" placeholder="What do you like about MetaSnap? How can we improve?" required></textarea>
+                </div>
+                
+                <div class="success-message" id="feedbackSuccess">
+                    <i class="fas fa-check-circle"></i>
+                    <div>Thank you for your feedback! We appreciate your time.</div>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-proceed">Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Help Button -->
+    <div class="help-btn" id="helpBtn" data-aos="fade-left" data-aos-delay="300">
+        <i class="fas fa-question"></i>
+    </div>
+
+    <!-- Feedback Button -->
+    <div class="help-btn" id="feedbackBtn" style="right: 5rem; background-color: var(--accent-color);" data-aos="fade-left" data-aos-delay="400">
+        <i class="fas fa-comment"></i>
+    </div>
+
+    <!-- Footer -->
+    <footer data-aos="fade-up">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h4>MetaSnap</h4>
+                <p>Extract EXIF metadata from your images with our powerful online tool. All processing happens locally in your browser for maximum privacy.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="#features"><i class="fas fa-chevron-right"></i> Features</a></li>
+                    <li><a href="#upload"><i class="fas fa-chevron-right"></i> Upload Image</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> About Us</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column">
+                <h4>Resources</h4>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Help Center</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Privacy Policy</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Terms of Service</a></li>
+                    <li><a href="#" id="footerFeedbackBtn"><i class="fas fa-chevron-right"></i> Send Feedback</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>Web Developed by Murli Kumar &copy; <span id="year"></span> | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <!-- Exif.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
+    
+    <!-- AOS Animation Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- FileSaver.js for downloading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <!-- Main Script -->
+    <script>
+        // Device image database (simplified example)
+        const deviceImages = {
+            'apple': {
+                'iphone 13': 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-13.jpg',
+                'iphone 12': 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-12.jpg',
+                'iphone 11': 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-11.jpg',
+                'iphone x': 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-x.jpg',
+                'default': 'https://fdn2.gsmarena.com/img/phones/apple_logo.jpg'
+            },
+            'samsung': {
+                'galaxy s22': 'https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-s22-5g.jpg',
+                'galaxy s21': 'https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-s21-5g.jpg',
+                'galaxy note 20': 'https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-note-20.jpg',
+                'default': 'https://fdn2.gsmarena.com/img/phones/samsung_logo.jpg'
+            },
+            'xiaomi': {
+                'redmi note 11': 'https://fdn2.gsmarena.com/vv/bigpic/xiaomi-redmi-note-11.jpg',
+                'mi 11': 'https://fdn2.gsmarena.com/vv/bigpic/xiaomi-mi-11.jpg',
+                'default': 'https://fdn2.gsmarena.com/img/phones/xiaomi_logo.jpg'
+            },
+            'canon': {
+                'eos 5d mark iv': 'https://fdn2.gsmarena.com/vv/bigpic/canon-eos-5d-mark-iv.jpg',
+                'eos r5': 'https://fdn2.gsmarena.com/vv/bigpic/canon-eos-r5.jpg',
+                'default': 'https://fdn2.gsmarena.com/img/cameras/canon_logo.jpg'
+            },
+            'nikon': {
+                'd850': 'https://fdn2.gsmarena.com/vv/bigpic/nikon-d850.jpg',
+                'z7 ii': 'https://fdn2.gsmarena.com/vv/bigpic/nikon-z7-ii.jpg',
+                'default': 'https://fdn2.gsmarena.com/img/cameras/nikon_logo.jpg'
+            },
+            'default': 'https://cdn-icons-png.flaticon.com/512/2284/2284886.png'
+        };
+
+        // Initialize AOS animations
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+            
+            // Set current year in footer
+            document.getElementById('year').textContent = new Date().getFullYear();
+            
+            // DOM Elements
+            const fileInput = document.getElementById('fileInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const dropArea = document.getElementById('dropArea');
+            const thumbnailContainer = document.getElementById('thumbnailContainer');
+            const exifData = document.getElementById('exifData');
+            const exifTableBody = document.getElementById('exifTableBody');
+            const mapContainer = document.getElementById('mapContainer');
+            const clearBtn = document.getElementById('clearBtn');
+            const warningModal = document.getElementById('warningModal');
+            const modalClose = document.getElementById('modalClose');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const proceedBtn = document.getElementById('proceedBtn');
+            const helpBtn = document.getElementById('helpBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const imagePreview = document.getElementById('imagePreview');
+            const strippedWarning = document.getElementById('strippedWarning');
+            const devicePreview = document.getElementById('devicePreview');
+            const deviceImage = document.getElementById('deviceImage');
+            const deviceName = document.getElementById('deviceName');
+            const deviceModel = document.getElementById('deviceModel');
+            const howItWorksModal = document.getElementById('howItWorksModal');
+            const howItWorksClose = document.getElementById('howItWorksClose');
+            const learnMoreBtn = document.getElementById('learnMoreBtn');
+            const gotItBtn = document.getElementById('gotItBtn');
+            const feedbackModal = document.getElementById('feedbackModal');
+            const feedbackClose = document.getElementById('feedbackClose');
+            const feedbackBtn = document.getElementById('feedbackBtn');
+            const footerFeedbackBtn = document.getElementById('footerFeedbackBtn');
+            const feedbackForm = document.getElementById('feedbackForm');
+            const feedbackSuccess = document.getElementById('feedbackSuccess');
+            const ratingStars = document.getElementById('ratingStars');
+            const stars = ratingStars.querySelectorAll('.star');
+            const feedbackRating = document.getElementById('feedbackRating');
+            
+            // Variables
+            let selectedFiles = [];
+            let currentExifData = null;
+            let currentFileIndex = 0;
+            
+            // Event Listeners
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.style.backgroundColor = 'rgba(67, 97, 238, 0.1)';
+                dropArea.style.borderColor = 'var(--secondary-color)';
+            });
+            
+            dropArea.addEventListener('dragleave', () => {
+                dropArea.style.backgroundColor = 'rgba(67, 97, 238, 0.03)';
+                dropArea.style.borderColor = 'var(--primary-color)';
+            });
+            
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropArea.style.backgroundColor = 'rgba(67, 97, 238, 0.03)';
+                dropArea.style.borderColor = 'var(--primary-color)';
+                
+                if (e.dataTransfer.files.length) {
+                    selectedFiles = Array.from(e.dataTransfer.files);
+                    showWarningModal();
+                }
+            });
+            
+            dropArea.addEventListener('click', () => fileInput.click());
+            
+            clearBtn.addEventListener('click', resetForm);
+            
+            cancelBtn.addEventListener('click', () => {
+                warningModal.classList.remove('show');
+                selectedFiles = [];
+                fileInput.value = '';
+                setTimeout(() => {
+                    warningModal.style.display = 'none';
+                }, 300);
+            });
+            
+            proceedBtn.addEventListener('click', processImage);
+            
+            downloadBtn.addEventListener('click', downloadExifData);
+            
+            helpBtn.addEventListener('click', () => {
+                howItWorksModal.style.display = 'flex';
+                setTimeout(() => {
+                    howItWorksModal.classList.add('show');
+                }, 10);
+            });
+            
+            learnMoreBtn.addEventListener('click', () => {
+                howItWorksModal.style.display = 'flex';
+                setTimeout(() => {
+                    howItWorksModal.classList.add('show');
+                }, 10);
+            });
+            
+            howItWorksClose.addEventListener('click', () => {
+                howItWorksModal.classList.remove('show');
+                setTimeout(() => {
+                    howItWorksModal.style.display = 'none';
+                }, 300);
+            });
+            
+            gotItBtn.addEventListener('click', () => {
+                howItWorksModal.classList.remove('show');
+                setTimeout(() => {
+                    howItWorksModal.style.display = 'none';
+                }, 300);
+            });
+            
+            feedbackBtn.addEventListener('click', showFeedbackModal);
+            
+            footerFeedbackBtn.addEventListener('click', showFeedbackModal);
+            
+            feedbackClose.addEventListener('click', () => {
+                feedbackModal.classList.remove('show');
+                setTimeout(() => {
+                    feedbackModal.style.display = 'none';
+                }, 300);
+            });
+            
+            // Star rating interaction
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const rating = parseInt(star.getAttribute('data-rating'));
+                    feedbackRating.value = rating;
+                    
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                });
+            });
+            
+            // Feedback form submission
+            feedbackForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Here you would typically send the feedback to a server
+                // For this demo, we'll just show a success message
+                
+                // Reset form
+                feedbackForm.reset();
+                stars.forEach(star => star.classList.remove('active'));
+                feedbackRating.value = '0';
+                
+                // Show success message
+                feedbackSuccess.style.display = 'flex';
+                
+                // Hide success message after 3 seconds
+                setTimeout(() => {
+                    feedbackSuccess.style.display = 'none';
+                    feedbackModal.classList.remove('show');
+                    setTimeout(() => {
+                        feedbackModal.style.display = 'none';
+                    }, 300);
+                }, 3000);
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === warningModal) {
+                    warningModal.classList.remove('show');
+                    setTimeout(() => {
+                        warningModal.style.display = 'none';
+                    }, 300);
+                }
+                
+                if (e.target === howItWorksModal) {
+                    howItWorksModal.classList.remove('show');
+                    setTimeout(() => {
+                        howItWorksModal.style.display = 'none';
+                    }, 300);
+                }
+                
+                if (e.target === feedbackModal) {
+                    feedbackModal.classList.remove('show');
+                    setTimeout(() => {
+                        feedbackModal.style.display = 'none';
+                    }, 300);
+                }
+            });
+            
+            // Functions
+            function showFeedbackModal() {
+                feedbackModal.style.display = 'flex';
+                setTimeout(() => {
+                    feedbackModal.classList.add('show');
+                }, 10);
+            }
+            
+            function handleFileSelect(e) {
+                if (e.target.files.length) {
+                    selectedFiles = Array.from(e.target.files);
+                    showWarningModal();
+                }
+            }
+            
+            function showWarningModal() {
+                warningModal.style.display = 'flex';
+                setTimeout(() => {
+                    warningModal.classList.add('show');
+                }, 10);
+            }
+            
+            function processImage() {
+                warningModal.classList.remove('show');
+                setTimeout(() => {
+                    warningModal.style.display = 'none';
+                }, 300);
+                
+                if (!selectedFiles.length) return;
+                
+                // Filter only image files
+                selectedFiles = selectedFiles.filter(file => file.type.match('image.*'));
+                
+                if (!selectedFiles.length) {
+                    alert('Please select image files (JPEG, PNG, etc.)');
+                    return;
+                }
+                
+                // Display thumbnails
+                displayThumbnails();
+                
+                // Process the first file
+                currentFileIndex = 0;
+                processFile(selectedFiles[currentFileIndex]);
+            }
+            
+            function displayThumbnails() {
+                thumbnailContainer.innerHTML = '';
+                
+                selectedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const thumbnailItem = document.createElement('div');
+                        thumbnailItem.className = 'thumbnail-item';
+                        thumbnailItem.setAttribute('data-index', index);
+                        
+                        const thumbnailImg = document.createElement('img');
+                        thumbnailImg.className = 'thumbnail-img';
+                        thumbnailImg.src = e.target.result;
+                        
+                        const thumbnailRemove = document.createElement('div');
+                        thumbnailRemove.className = 'thumbnail-remove';
+                        thumbnailRemove.innerHTML = '&times;';
+                        thumbnailRemove.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            removeThumbnail(index);
+                        });
+                        
+                        thumbnailItem.appendChild(thumbnailImg);
+                        thumbnailItem.appendChild(thumbnailRemove);
+                        thumbnailContainer.appendChild(thumbnailItem);
+                        
+                        // Add click handler to switch between images
+                        thumbnailItem.addEventListener('click', () => {
+                            currentFileIndex = index;
+                            processFile(selectedFiles[index]);
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            function removeThumbnail(index) {
+                selectedFiles.splice(index, 1);
+                
+                if (selectedFiles.length === 0) {
+                    resetForm();
+                } else {
+                    displayThumbnails();
+                    
+                    // If we removed the currently displayed file, show the first one
+                    if (index === currentFileIndex) {
+                        currentFileIndex = 0;
+                        processFile(selectedFiles[0]);
+                    }
+                }
+            }
+            
+            function processFile(file) {
+                // Show image preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                
+                // Read EXIF data
+                EXIF.getData(file, function() {
+                    const allMetaData = EXIF.getAllTags(this);
+                    currentExifData = allMetaData;
+                    displayExifData(allMetaData);
+                    
+                    // Check if metadata seems stripped (common in social media images)
+                    checkForStrippedMetadata(allMetaData);
+                    
+                    // Show device image if available
+                    showDeviceImage(allMetaData);
+                    
+                    // Check for GPS data
+                    if (allMetaData.GPSLatitude && allMetaData.GPSLongitude) {
+                        const lat = convertDMSToDD(allMetaData.GPSLatitude, allMetaData.GPSLatitudeRef);
+                        const lng = convertDMSToDD(allMetaData.GPSLongitude, allMetaData.GPSLongitudeRef);
+                        displayMap(lat, lng);
+                    } else {
+                        mapContainer.style.display = 'none';
+                    }
+                });
+                
+                // Show the EXIF data section
+                exifData.style.display = 'block';
+                
+                // Scroll to the EXIF data section
+                setTimeout(() => {
+                    exifData.scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+            }
+            
+            function showDeviceImage(data) {
+                if (!data.Make || !data.Model) {
+                    devicePreview.style.display = 'none';
+                    return;
+                }
+                
+                const make = data.Make.toLowerCase();
+                const model = data.Model.toLowerCase().replace(make, '').trim();
+                
+                // Find device image
+                let deviceImgUrl = deviceImages.default;
+                let displayName = data.Make;
+                let displayModel = data.Model;
+                
+                if (deviceImages[make]) {
+                    // Try to find exact model match
+                    for (const [key, value] of Object.entries(deviceImages[make])) {
+                        if (model.includes(key)) {
+                            deviceImgUrl = value;
+                            displayModel = data.Model;
+                            break;
+                        }
+                    }
+                    
+                    // If no exact match, use default for manufacturer
+                    if (deviceImgUrl === deviceImages.default && deviceImages[make].default) {
+                        deviceImgUrl = deviceImages[make].default;
+                    }
+                }
+                
+                // Update device preview
+                deviceImage.src = deviceImgUrl;
+                deviceImage.alt = `${data.Make} ${data.Model}`;
+                deviceName.textContent = data.Make;
+                deviceModel.textContent = data.Model;
+                devicePreview.style.display = 'flex';
+            }
+            
+            function checkForStrippedMetadata(data) {
+                // Check if essential EXIF fields are missing
+                const essentialFields = ['Make', 'Model', 'DateTimeOriginal', 'GPSLatitude', 'GPSLongitude'];
+                const hasEssentialData = essentialFields.some(field => data[field]);
+                
+                // Check if the image might be from WhatsApp (often contains "WhatsApp" in software tag)
+                const isPossiblySocialMedia = 
+                    (data.Software && (data.Software.includes('WhatsApp') || data.Software.includes('Telegram'))) ||
+                    (!hasEssentialData && Object.keys(data).length < 5);
+                
+                if (isPossiblySocialMedia) {
+                    strippedWarning.style.display = 'flex';
+                } else {
+                    strippedWarning.style.display = 'none';
+                }
+            }
+            
+            function displayExifData(data) {
+                // Clear previous data
+                exifTableBody.innerHTML = '';
+                
+                // Basic file info
+                addRowToTable('File Name', selectedFiles[currentFileIndex].name);
+                addRowToTable('File Type', selectedFiles[currentFileIndex].type);
+                addRowToTable('File Size', formatFileSize(selectedFiles[currentFileIndex].size));
+                
+                // Device information
+                if (data.Make) addRowToTable('Device Manufacturer', data.Make);
+                if (data.Model) {
+                    // Clean up model name (remove manufacturer name if duplicated)
+                    let modelName = data.Model.replace(data.Make, '').trim();
+                    if (!modelName) modelName = data.Model;
+                    addRowToTable('Device Model', modelName);
+                }
+                
+                // Location information
+                if (data.GPSLatitude && data.GPSLongitude) {
+                    const lat = convertDMSToDD(data.GPSLatitude, data.GPSLatitudeRef);
+                    const lng = convertDMSToDD(data.GPSLongitude, data.GPSLongitudeRef);
+                    addRowToTable('GPS Coordinates', `${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+                    addRowToTable('GPS Altitude', data.GPSAltitude ? data.GPSAltitude + ' m' : 'Not available');
+                    
+                    // Add link to open in Google Maps
+                    const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                    addRowToTable('View on Map', `<a href="${mapsLink}" target="_blank">Open in Google Maps</a>`);
+                }
+                
+                // Date and time
+                if (data.DateTimeOriginal) {
+                    addRowToTable('Date Taken', formatExifDate(data.DateTimeOriginal));
+                } else if (data.DateTime) {
+                    addRowToTable('Date Modified', formatExifDate(data.DateTime));
+                }
+                
+                // Camera settings
+                if (data.ExposureTime) addRowToTable('Exposure Time', data.ExposureTime + ' sec');
+                if (data.FNumber) addRowToTable('Aperture', 'f/' + data.FNumber);
+                if (data.ISOSpeedRatings) addRowToTable('ISO', data.ISOSpeedRatings);
+                if (data.FocalLength) addRowToTable('Focal Length', data.FocalLength + ' mm');
+                if (data.Flash) addRowToTable('Flash', data.Flash == 1 ? 'Fired' : 'Did not fire');
+                
+                // Image dimensions
+                if (data.ImageWidth) addRowToTable('Image Width', data.ImageWidth + ' px');
+                if (data.ImageHeight) addRowToTable('Image Height', data.ImageHeight + ' px');
+                
+                // Software
+                if (data.Software) addRowToTable('Software', data.Software);
+                
+                // Add any other available EXIF data
+                let hasOtherData = false;
+                for (const key in data) {
+                    if (![
+                        'Make', 'Model', 'DateTimeOriginal', 'DateTime', 'ExposureTime', 'FNumber', 
+                        'ISOSpeedRatings', 'FocalLength', 'ImageWidth', 'ImageHeight', 'Flash',
+                        'GPSLatitude', 'GPSLongitude', 'GPSLatitudeRef', 'GPSLongitudeRef', 'GPSAltitude',
+                        'Software'
+                    ].includes(key) && data[key]) {
+                        if (!hasOtherData) {
+                            // Add separator
+                            const separatorRow = document.createElement('tr');
+                            const separatorCell = document.createElement('td');
+                            separatorCell.colSpan = 2;
+                            separatorCell.innerHTML = '<strong>Additional Metadata</strong>';
+                            separatorCell.style.paddingTop = '2rem';
+                            separatorRow.appendChild(separatorCell);
+                            exifTableBody.appendChild(separatorRow);
+                            hasOtherData = true;
+                        }
+                        addRowToTable(key, data[key]);
+                    }
+                }
+                
+                // If no EXIF data found at all
+                if (exifTableBody.children.length <= 3) { // Only file info rows
+                    const noDataRow = document.createElement('tr');
+                    const noDataCell = document.createElement('td');
+                    noDataCell.colSpan = 2;
+                    noDataCell.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> No EXIF metadata found. This image may have been processed or stripped of its metadata.</div>';
+                    noDataRow.appendChild(noDataCell);
+                    exifTableBody.appendChild(noDataRow);
+                }
+            }
+            
+            function addRowToTable(property, value) {
+                const row = document.createElement('tr');
+                
+                const propCell = document.createElement('td');
+                propCell.textContent = property;
+                propCell.style.fontWeight = '500';
+                
+                const valueCell = document.createElement('td');
+                // Check if value is HTML or plain text
+                if (typeof value === 'string' && value.startsWith('<')) {
+                    valueCell.innerHTML = value;
+                } else {
+                    valueCell.textContent = value;
+                }
+                
+                row.appendChild(propCell);
+                row.appendChild(valueCell);
+                exifTableBody.appendChild(row);
+            }
+            
+            function displayMap(lat, lng) {
+                mapContainer.style.display = 'block';
+                mapContainer.innerHTML = `
+                    <iframe 
+                        width="100%" 
+                        height="100%" 
+                        frameborder="0" 
+                        scrolling="no" 
+                        marginheight="0" 
+                        marginwidth="0" 
+                        src="https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed">
+                    </iframe>
+                    <br />
+                    <small>
+                        <a href="https://maps.google.com/maps?q=${lat},${lng}&z=15" target="_blank">View Larger Map</a>
+                    </small>
+                `;
+            }
+            
+            function downloadExifData() {
+                if (!currentExifData) {
+                    alert('No EXIF data to download');
+                    return;
+                }
+                
+                // Create CSV content
+                let csvContent = "Property,Value\n";
+                
+                // Add basic file info
+                csvContent += `File Name,${selectedFiles[currentFileIndex].name}\n`;
+                csvContent += `File Type,${selectedFiles[currentFileIndex].type}\n`;
+                csvContent += `File Size,${formatFileSize(selectedFiles[currentFileIndex].size)}\n`;
+                
+                // Add EXIF data
+                for (const [key, value] of Object.entries(currentExifData)) {
+                    if (value !== undefined && value !== null) {
+                        // Handle GPS coordinates specially
+                        if (key === 'GPSLatitude' && currentExifData.GPSLongitude) {
+                            const lat = convertDMSToDD(currentExifData.GPSLatitude, currentExifData.GPSLatitudeRef);
+                            const lng = convertDMSToDD(currentExifData.GPSLongitude, currentExifData.GPSLongitudeRef);
+                            csvContent += `GPS Coordinates,${lat.toFixed(6)}, ${lng.toFixed(6)}\n`;
+                        } else if (key !== 'GPSLongitude' && key !== 'GPSLatitudeRef' && key !== 'GPSLongitudeRef') {
+                            // Escape commas and quotes in values
+                            const escapedValue = String(value).replace(/"/g, '""');
+                            csvContent += `${key},"${escapedValue}"\n`;
+                        }
+                    }
+                }
+                
+                // Create blob and download
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const filename = selectedFiles[currentFileIndex].name.replace(/\.[^/.]+$/, '') + '_metadata.csv';
+                saveAs(blob, filename);
+            }
+            
+            function resetForm() {
+                fileInput.value = '';
+                selectedFiles = [];
+                exifData.style.display = 'none';
+                mapContainer.style.display = 'none';
+                imagePreview.style.display = 'none';
+                devicePreview.style.display = 'none';
+                strippedWarning.style.display = 'none';
+                exifTableBody.innerHTML = '';
+                currentExifData = null;
+                thumbnailContainer.innerHTML = '';
+            }
+            
+            // Helper functions
+            function convertDMSToDD(dms, ref) {
+                // Convert DMS (degrees, minutes, seconds) to decimal degrees
+                const degrees = dms[0];
+                const minutes = dms[1];
+                const seconds = dms[2];
+                
+                let dd = degrees + (minutes / 60) + (seconds / 3600);
+                
+                if (ref === 'S' || ref === 'W') {
+                    dd = -dd;
+                }
+                
+                return dd;
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            function formatExifDate(dateString) {
+                // EXIF date format: "YYYY:MM:DD HH:MM:SS"
+                try {
+                    const parts = dateString.split(' ');
+                    const dateParts = parts[0].split(':');
+                    const timeParts = parts[1].split(':');
+                    
+                    const date = new Date(
+                        dateParts[0], dateParts[1] - 1, dateParts[2],
+                        timeParts[0], timeParts[1], timeParts[2]
+                    );
+                    
+                    return date.toLocaleString();
+                } catch (e) {
+                    return dateString; // Return original if parsing fails
+                }
+            }
+        });
+    </script>
+</body>   
+</html>
